@@ -399,4 +399,55 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Brand Carousel Duplicate ---------- */
   const brandTrack = document.querySelector('.brands-track');
   if (brandTrack) brandTrack.innerHTML += brandTrack.innerHTML;
+
+  /* ---------- Security: Disable Right Click ---------- */
+  document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+  });
+
+  /* ---------- Security: Block Inspect Shortcuts ---------- */
+  document.addEventListener('keydown', (e) => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
+      (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's')) ||
+      (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i')) ||
+      (e.metaKey && e.altKey && (e.key === 'U' || e.key === 'u'))
+    ) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  /* ---------- Security: Disable View Source ---------- */
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'F12') {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  /* ---------- Security: Disable Drag on Contact Elements ---------- */
+  const protectedElements = document.querySelectorAll('.contact-item, .contact-info, .footer-contact, .top-bar, .footer-bottom');
+  protectedElements.forEach(el => {
+    el.setAttribute('draggable', 'false');
+    el.addEventListener('dragstart', (e) => { e.preventDefault(); return false; });
+  });
+
+  /* ---------- Security: Warn on DevTools Open ---------- */
+  (function() {
+    let devtoolsOpen = false;
+    const threshold = 160;
+    setInterval(() => {
+      if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
+        if (!devtoolsOpen) {
+          devtoolsOpen = true;
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a2463;color:#fff;font-family:Arial,sans-serif;text-align:center;padding:20px;"><div><h1 style="font-size:2rem;margin-bottom:15px;">Access Restricted</h1><p style="font-size:1.1rem;opacity:0.8;">This website is protected. DevTools access is not allowed.</p></div></div>';
+        }
+      } else {
+        devtoolsOpen = false;
+      }
+    }, 1000);
+  })();
 });

@@ -2016,3 +2016,49 @@ img { max-width: 100%; height: auto; display: block; }
   .top-bar, .header, .back-to-top, .cta-section, .footer { display: none !important; }
   body { color: #000; background: #fff; }
 }
+
+/* ---------- Security: No Copy / No Select ---------- */
+.contact-item,
+.contact-info,
+.contact-form,
+.footer-contact,
+.footer-contact p,
+.top-bar-left span,
+.top-bar-left,
+.top-bar,
+.footer-bottom,
+.no-copy {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.top-bar a,
+.footer-contact a,
+.footer-social a,
+.footer-links a {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+.top-bar-right a,
+.footer-social a,
+.footer-links a {
+  pointer-events: auto;
+}
+
+/* Disable image dragging */
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  pointer-events: auto;
+}
