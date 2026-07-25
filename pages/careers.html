@@ -103,43 +103,8 @@
   <section class="section-padding careers">
     <div class="container">
       <div class="section-title"><h2>Open Positions</h2></div>
-      <div class="careers-grid">
-        <div class="career-card">
-          <h3>L1 Support Engineer</h3>
-          <div class="location">&#128205; Delhi NCR / Mumbai / Bengaluru</div>
-          <p>Handle basic IT support tickets, remote troubleshooting, and user assistance. 1-2 years experience required.</p>
-          <a href="contact.html" class="btn btn-primary">Apply Now</a>
-        </div>
-        <div class="career-card">
-          <h3>L2 Support Engineer</h3>
-          <div class="location">&#128205; Delhi NCR / Pune / Hyderabad</div>
-          <p>Advanced troubleshooting, hardware repair, and network support. 3-5 years experience with certifications preferred.</p>
-          <a href="contact.html" class="btn btn-primary">Apply Now</a>
-        </div>
-        <div class="career-card">
-          <h3>L3 / Senior Engineer</h3>
-          <div class="location">&#128205; Delhi NCR / Mumbai</div>
-          <p>Server management, infrastructure design, and escalation handling. 5+ years experience required.</p>
-          <a href="contact.html" class="btn btn-primary">Apply Now</a>
-        </div>
-        <div class="career-card">
-          <h3>Network Engineer</h3>
-          <div class="location">&#128205; PAN India</div>
-          <p>LAN/WAN deployment, WiFi setup, and network management. CCNA/CCNP certification preferred.</p>
-          <a href="contact.html" class="btn btn-primary">Apply Now</a>
-        </div>
-        <div class="career-card">
-          <h3>Field Engineer</h3>
-          <div class="location">&#128205; PAN India (Multiple Cities)</div>
-          <p>Onsite IT support, installation, and maintenance. Self-motivated with strong troubleshooting skills.</p>
-          <a href="contact.html" class="btn btn-primary">Apply Now</a>
-        </div>
-        <div class="career-card">
-          <h3>Project Coordinator</h3>
-          <div class="location">&#128205; Delhi NCR</div>
-          <p>Coordinate IT projects, manage timelines, and liaise with clients. PMP certification is a plus.</p>
-          <a href="contact.html" class="btn btn-primary">Apply Now</a>
-        </div>
+      <div class="careers-grid" id="jobListings">
+        <div class="loading" style="grid-column:1/-1;">Loading job postings...</div>
       </div>
     </div>
   </section>
@@ -149,37 +114,117 @@
       <div style="max-width:600px;margin:0 auto;">
         <div class="contact-form">
           <h3 style="color:var(--primary);margin-bottom:25px;text-align:center;">Send Your Resume</h3>
-          <form>
+          <form id="careerForm">
             <div class="form-row">
-              <div class="form-group"><label>Full Name *</label><input type="text" placeholder="Your Name" required></div>
-              <div class="form-group"><label>Email *</label><input type="email" placeholder="you@email.com" required></div>
+              <div class="form-group"><label>Full Name *</label><input type="text" name="name" placeholder="Your Name" required></div>
+              <div class="form-group"><label>Email *</label><input type="email" name="email" placeholder="you@email.com" required></div>
             </div>
             <div class="form-group">
               <label>Position Applying For *</label>
-              <select required>
+              <select name="position" id="positionSelect" required>
                 <option value="">Select Position</option>
-                <option>L1 Support Engineer</option>
-                <option>L2 Support Engineer</option>
-                <option>L3 / Senior Engineer</option>
-                <option>Network Engineer</option>
-                <option>Field Engineer</option>
-                <option>Project Coordinator</option>
               </select>
             </div>
-            <div class="form-group"><label>Phone *</label><input type="tel" placeholder="+91 98765 43210" required></div>
-            <div class="form-group"><label>Resume Link / Message</label><textarea placeholder="Paste your resume link or share details about your experience"></textarea></div>
+            <div class="form-group"><label>Phone *</label><input type="tel" name="phone" placeholder="+91 98765 43210" required></div>
+            <div class="form-group"><label>Resume Link / Message</label><textarea name="resume_link" placeholder="Paste your resume link or share details about your experience"></textarea></div>
             <button type="submit" class="btn btn-primary" style="width:100%;">Submit Application</button>
+            <p id="careerFormMsg" style="text-align:center;margin-top:10px;font-size:0.9rem;display:none;"></p>
           </form>
         </div>
       </div>
     </div>
   </section>
 
+  <script>
+    const API = window.location.origin + '/api';
+
+    async function loadJobs() {
+      try {
+        const res = await fetch(`${API}/jobs?status=active`);
+        const jobs = await res.json();
+        const grid = document.getElementById('jobListings');
+        const select = document.getElementById('positionSelect');
+        if (!jobs.length) {
+          grid.innerHTML = '<p style="text-align:center;color:var(--text-light);grid-column:1/-1;">No open positions at the moment. Check back soon!</p>';
+          return;
+        }
+        let cardsHtml = '';
+        jobs.forEach(j => {
+          cardsHtml += `<div class="career-card">
+            <h3>${j.title}</h3>
+            <div class="location">${j.location ? '&#128205; ' + j.location : ''} ${j.department ? '| &#128188; ' + j.department : ''}</div>
+            <p>${j.description}</p>
+            ${j.requirements ? '<p style="font-size:0.85rem;color:var(--text-light);"><strong>Requirements:</strong> ' + j.requirements + '</p>' : ''}
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:0.85rem;color:var(--text-light);">
+              ${j.experience ? '<span>&#128100; ' + j.experience + '</span>' : ''}
+              ${j.salary_range ? '<span>&#128176; ' + j.salary_range + '</span>' : ''}
+              <span>&#9200; ${j.employment_type}</span>
+            </div>
+            <a href="#careerForm" class="btn btn-primary" style="margin-top:15px;" onclick="selectPosition('${j.title.replace(/'/g,"\\'")}')">Apply Now</a>
+          </div>`;
+        });
+        grid.innerHTML = cardsHtml;
+
+        select.innerHTML = '<option value="">Select Position</option>';
+        jobs.forEach(j => {
+          select.innerHTML += '<option value="' + j.title + '">' + j.title + (j.location ? ' (' + j.location + ')' : '') + '</option>';
+        });
+      } catch(e) {
+        document.getElementById('jobListings').innerHTML = '<p style="text-align:center;color:var(--text-light);grid-column:1/-1;">Unable to load positions.</p>';
+      }
+    }
+
+    function selectPosition(title) {
+      const select = document.getElementById('positionSelect');
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === title) { select.selectedIndex = i; break; }
+      }
+    }
+
+    document.getElementById('careerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('careerFormMsg');
+      const data = Object.fromEntries(new FormData(e.target));
+      try {
+        const res = await fetch(`${API}/careers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error);
+        msg.textContent = 'Application submitted successfully! We will get back to you soon.';
+        msg.style.color = 'var(--success)';
+        msg.style.display = 'block';
+        e.target.reset();
+      } catch(err) {
+        msg.textContent = err.message || 'Something went wrong. Please try again.';
+        msg.style.color = 'var(--danger)';
+        msg.style.display = 'block';
+      }
+    });
+
+    loadJobs();
+  </script>
+
   <footer class="footer">
     <div class="container"><div class="footer-bottom"><p>&copy; 2026 SKB Enterprises. All Rights Reserved.</p></div></div>
   </footer>
-  <a href="https://wa.me/919876543210" target="_blank" class="whatsapp-btn">&#128172;</a>
   <button class="back-to-top">&#8593;</button>
   <script src="../js/main.js"></script>
+
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='https://embed.tawk.to/6a64f3e5d0a4321d44bdeee1/1jud5hf6f';
+  s1.charset='UTF-8';
+  s1.setAttribute('crossorigin','*');
+  s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
 </body>
 </html>

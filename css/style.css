@@ -1109,28 +1109,6 @@ img { max-width: 100%; height: auto; display: block; }
   font-size: 0.9rem;
 }
 
-/* ---------- WhatsApp Button ---------- */
-.whatsapp-btn {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  background: #25d366;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-  font-size: 2rem;
-  box-shadow: 0 4px 15px rgba(37,211,102,0.4);
-  z-index: 999;
-  transition: var(--transition);
-  cursor: pointer;
-  border: none;
-}
-.whatsapp-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(37,211,102,0.6); }
-
 /* ---------- Back to Top ---------- */
 .back-to-top {
   position: fixed;
@@ -1838,14 +1816,7 @@ img { max-width: 100%; height: auto; display: block; }
   .admin-stat-card p { font-size: 0.78rem; }
   .admin-table th, .admin-table td { padding: 10px 12px; font-size: 0.78rem; }
 
-  /* -- WhatsApp & Back to Top -- */
-  .whatsapp-btn {
-    width: 52px;
-    height: 52px;
-    font-size: 1.6rem;
-    bottom: 20px;
-    right: 16px;
-  }
+  /* -- Back to Top -- */
   .back-to-top {
     width: 40px;
     height: 40px;
@@ -1959,7 +1930,6 @@ img { max-width: 100%; height: auto; display: block; }
 /* ---------- Notched Phones (iPhone X+) ---------- */
 @supports (padding-top: env(safe-area-inset-top)) {
   .header { padding-top: env(safe-area-inset-top); }
-  .whatsapp-btn { bottom: calc(20px + env(safe-area-inset-bottom)); }
   .back-to-top { bottom: calc(20px + env(safe-area-inset-bottom)); }
   .footer { padding-bottom: env(safe-area-inset-bottom); }
 }
@@ -1986,6 +1956,6 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* ---------- Print ---------- */
 @media print {
-  .top-bar, .header, .whatsapp-btn, .back-to-top, .cta-section, .footer { display: none !important; }
+  .top-bar, .header, .back-to-top, .cta-section, .footer { display: none !important; }
   body { color: #000; background: #fff; }
 }

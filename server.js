@@ -120,6 +120,20 @@ async function initDB() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS job_postings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    department TEXT DEFAULT '',
+    location TEXT DEFAULT '',
+    employment_type TEXT DEFAULT 'Full-time',
+    experience TEXT DEFAULT '',
+    salary_range TEXT DEFAULT '',
+    description TEXT NOT NULL,
+    requirements TEXT DEFAULT '',
+    status TEXT DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
   // User system tables
   try { db.run("ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''"); } catch(e) {}
   try { db.run("ALTER TABLE users ADD COLUMN address TEXT DEFAULT ''"); } catch(e) {}
@@ -523,6 +537,60 @@ app.put('/api/careers/:id', authenticateToken, (req, res) => {
   const { status } = req.body;
   runSQL('UPDATE career_applications SET status = ? WHERE id = ?', [status, parseInt(req.params.id)]);
   res.json({ message: 'Application updated' });
+});
+
+// ===========================
+//      JOB POSTINGS
+// ===========================
+app.get('/api/jobs', (req, res) => {
+  const { status } = req.query;
+  let sql = 'SELECT * FROM job_postings WHERE 1=1';
+  const params = [];
+  if (status && status !== 'all') { sql += ' AND status = ?'; params.push(status); }
+  sql += ' ORDER BY created_at DESC';
+  res.json(queryAll(sql, params));
+});
+
+app.get('/api/jobs/:id', (req, res) => {
+  const job = queryOne('SELECT * FROM job_postings WHERE id = ?', [parseInt(req.params.id)]);
+  if (!job) return res.status(404).json({ error: 'Job not found' });
+  res.json(job);
+});
+
+app.post('/api/jobs', authenticateToken, (req, res) => {
+  const { title, department, location, employment_type, experience, salary_range, description, requirements } = req.body;
+  if (!title || !description) {
+    return res.status(400).json({ error: 'Title and description are required' });
+  }
+  const id = runSQL('INSERT INTO job_postings (title,department,location,employment_type,experience,salary_range,description,requirements) VALUES (?,?,?,?,?,?,?,?)',
+    [title, department||'', location||'', employment_type||'Full-time', experience||'', salary_range||'', description, requirements||'']);
+  res.status(201).json({ id, message: 'Job posting created' });
+});
+
+app.put('/api/jobs/:id', authenticateToken, (req, res) => {
+  const id = parseInt(req.params.id);
+  const { title, department, location, employment_type, experience, salary_range, description, requirements, status } = req.body;
+  const fields = [];
+  const params = [];
+  if (title !== undefined) { fields.push('title = ?'); params.push(title); }
+  if (department !== undefined) { fields.push('department = ?'); params.push(department); }
+  if (location !== undefined) { fields.push('location = ?'); params.push(location); }
+  if (employment_type !== undefined) { fields.push('employment_type = ?'); params.push(employment_type); }
+  if (experience !== undefined) { fields.push('experience = ?'); params.push(experience); }
+  if (salary_range !== undefined) { fields.push('salary_range = ?'); params.push(salary_range); }
+  if (description !== undefined) { fields.push('description = ?'); params.push(description); }
+  if (requirements !== undefined) { fields.push('requirements = ?'); params.push(requirements); }
+  if (status !== undefined) { fields.push('status = ?'); params.push(status); }
+  if (!fields.length) return res.status(400).json({ error: 'No fields to update' });
+  params.push(id);
+  runSQL(`UPDATE job_postings SET ${fields.join(', ')} WHERE id = ?`, params);
+  res.json({ message: 'Job posting updated' });
+});
+
+app.delete('/api/jobs/:id', authenticateToken, (req, res) => {
+  const id = parseInt(req.params.id);
+  runSQL('DELETE FROM job_postings WHERE id = ?', [id]);
+  res.json({ message: 'Job posting deleted' });
 });
 
 // ===========================
