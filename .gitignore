@@ -1,0 +1,4 @@
+node_modules/
+skb_database.sqlite
+*.log
+.DS_Store

@@ -1,0 +1,16 @@
+{
+  "name": "skb-enterprises-backend",
+  "version": "1.0.0",
+  "description": "SKB Enterprises IT Infrastructure - Backend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "sql.js": "^1.11.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | SKB Enterprises</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--lighter-gray)}
+    .login-box{background:var(--white);padding:50px;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);width:100%;max-width:420px;text-align:center}
+    .login-box h2{color:var(--primary);margin-bottom:10px}
+    .login-box p{color:var(--text-light);margin-bottom:30px}
+    .admin-panel{display:none}.admin-panel.active{display:block}
+    .notification-badge{background:var(--danger);color:#fff;border-radius:50%;padding:2px 7px;font-size:0.7rem;margin-left:8px}
+    .quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:30px}
+    .quick-action{background:var(--white);border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow);transition:var(--transition);cursor:pointer;border:1px solid var(--light-gray)}
+    .quick-action:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+    .quick-action .icon{font-size:2rem;margin-bottom:10px;display:block}
+    .quick-action h4{color:var(--primary);font-size:0.95rem}
+    .admin-section{display:none}.admin-section.active-section{display:block}
+    .filter-bar{display:flex;gap:15px;margin-bottom:25px;flex-wrap:wrap;align-items:center}
+    .filter-bar select,.filter-bar input{padding:8px 14px;border:2px solid var(--light-gray);border-radius:var(--radius);font-size:0.9rem}
+    .ticket-card{background:var(--white);border-radius:var(--radius-lg);padding:25px;box-shadow:var(--shadow);margin-bottom:15px;border-left:4px solid var(--accent)}
+    .ticket-card h4{color:var(--primary);margin-bottom:8px}
+    .ticket-meta{display:flex;gap:20px;color:var(--text-light);font-size:0.85rem;margin-bottom:10px}
+    .ticket-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .chart-placeholder{background:var(--lighter-gray);border-radius:var(--radius);height:250px;display:flex;align-items:center;justify-content:center;color:var(--text-light)}
+    .invoice-card{background:var(--white);border-radius:var(--radius-lg);padding:25px;box-shadow:var(--shadow);margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+    .invoice-info h4{color:var(--primary)}.invoice-info p{color:var(--text-light);font-size:0.9rem}
+    .invoice-amount{font-size:1.5rem;font-weight:800;color:var(--accent)}
+    .loading{padding:40px;text-align:center;color:var(--text-light)}
+    .toast{position:fixed;top:20px;right:20px;padding:14px 24px;border-radius:8px;color:#fff;font-size:0.95rem;z-index:99999;box-shadow:0 4px 15px rgba(0,0,0,0.2)}
+    .toast.success{background:#10b981}.toast.error{background:#ef4444}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center}
+    .modal{background:var(--white);border-radius:var(--radius-lg);padding:35px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
+    .modal h3{color:var(--primary);margin-bottom:20px}
+    @media(max-width:768px){.quick-actions{grid-template-columns:1fr}.ticket-actions{flex-direction:column}.invoice-card{flex-direction:column;text-align:center}.invoice-amount{text-align:center}}
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <div class="login-page" id="loginPage">
+    <div class="login-box">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.4rem;margin:0 auto 20px;">SKB</div>
+      <h2>Admin Dashboard</h2>
+      <p>Sign in to manage your IT services</p>
+      <form id="loginForm">
+        <div class="form-group"><label>Email Address</label><input type="email" id="loginEmail" placeholder="skbcomputer@Outlook.com" required></div>
+        <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Enter password" required></div>
+        <br>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Sign In</button>
+        <p id="loginError" style="color:var(--danger);margin-top:10px;font-size:0.9rem;display:none;"></p>
+      </form>
+      <p style="font-size:0.8rem;color:var(--text-light);margin-top:15px;">Admin access only</p>
+      <a href="../index.html" style="display:inline-block;margin-top:15px;color:var(--accent);font-size:0.9rem;">&larr; Back to Website</a>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-header"><h3>SKB Admin</h3><p id="adminUserName">Admin</p></div>
+        <ul class="admin-nav">
+          <li><a href="#" class="active" data-section="dashboard">&#128200; Dashboard</a></li>
+          <li><a href="#" data-section="leads">&#128233; Leads <span class="notification-badge" id="leadsBadge">0</span></a></li>
+          <li><a href="#" data-section="service-requests">&#128736; Service Requests <span class="notification-badge" id="srBadge">0</span></a></li>
+          <li><a href="#" data-section="engineers">&#128101; Engineers</a></li>
+          <li><a href="#" data-section="amc-contracts">&#128197; AMC Contracts</a></li>
+          <li><a href="#" data-section="invoices">&#128179; Invoices</a></li>
+          <li><a href="#" data-section="careers">&#128188; Career Applications</a></li>
+          <li><a href="#" data-section="reports">&#128202; Reports</a></li>
+        </ul>
+      </aside>
+      <main class="admin-main">
+        <div class="admin-topbar">
+          <h2 id="pageTitle">Dashboard</h2>
+          <div style="display:flex;align-items:center;gap:15px;">
+            <span style="color:var(--text-light);font-size:0.9rem;" id="welcomeText">Welcome</span>
+            <a href="../index.html" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;">View Site</a>
+            <button onclick="logout()" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;">Logout</button>
+          </div>
+        </div>
+        <div class="admin-content">
+          <!-- Dashboard -->
+          <div class="admin-section active-section" id="dashboard">
+            <div class="admin-stats">
+              <div class="admin-stat-card blue"><h3 id="statLeads">0</h3><p>Total Leads</p></div>
+              <div class="admin-stat-card green"><h3 id="statSR">0</h3><p>Active Service Requests</p></div>
+              <div class="admin-stat-card orange"><h3 id="statAMC">0</h3><p>Active AMC Contracts</p></div>
+              <div class="admin-stat-card red"><h3 id="statRevenue">-</h3><p>Paid Revenue</p></div>
+            </div>
+            <div class="quick-actions">
+              <div class="quick-action" onclick="openModal('newSR')"><span class="icon">&#128736;</span><h4>New Service Request</h4></div>
+              <div class="quick-action" onclick="openModal('newLead')"><span class="icon">&#128233;</span><h4>Add New Lead</h4></div>
+              <div class="quick-action" onclick="openModal('newEngineer')"><span class="icon">&#128101;</span><h4>Add Engineer</h4></div>
+            </div>
+            <div class="grid-2">
+              <div class="admin-table-wrapper">
+                <div class="admin-table-header"><h3>Recent Leads</h3></div>
+                <div id="recentLeadsTable"><div class="loading">Loading...</div></div>
+              </div>
+              <div class="admin-table-wrapper">
+                <div class="admin-table-header"><h3>Recent Service Requests</h3></div>
+                <div id="recentSRTable"><div class="loading">Loading...</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leads -->
+          <div class="admin-section" id="leads">
+            <div class="filter-bar">
+              <select id="leadStatusFilter"><option value="all">All Status</option><option value="new">New</option><option value="contacted">Contacted</option><option value="follow_up">Follow-up</option><option value="converted">Converted</option><option value="lost">Lost</option></select>
+              <input type="text" id="leadSearchFilter" placeholder="Search leads...">
+              <button class="btn btn-primary" style="font-size:0.9rem;" onclick="openModal('newLead')">+ Add Lead</button>
+            </div>
+            <div class="admin-table-wrapper"><div id="leadsTable"><div class="loading">Loading...</div></div></div>
+          </div>
+
+          <!-- Service Requests -->
+          <div class="admin-section" id="service-requests">
+            <div class="filter-bar">
+              <select id="srStatusFilter"><option value="all">All Status</option><option value="new">New</option><option value="assigned">Assigned</option><option value="in_progress">In Progress</option><option value="completed">Completed</option></select>
+              <select id="srPriorityFilter"><option value="all">All Priority</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+              <button class="btn btn-primary" style="font-size:0.9rem;" onclick="openModal('newSR')">+ New Request</button>
+            </div>
+            <div id="srList"><div class="loading">Loading...</div></div>
+          </div>
+
+          <!-- Engineers -->
+          <div class="admin-section" id="engineers">
+            <div class="filter-bar">
+              <select id="engCityFilter"><option value="all">All Cities</option><option>Delhi NCR</option><option>Mumbai</option><option>Pune</option><option>Bengaluru</option><option>Chennai</option><option>Hyderabad</option><option>Kolkata</option></select>
+              <select id="engLevelFilter"><option value="all">All Levels</option><option>L1</option><option>L2</option><option>L3</option></select>
+              <button class="btn btn-primary" style="font-size:0.9rem;" onclick="openModal('newEngineer')">+ Add Engineer</button>
+            </div>
+            <div class="admin-table-wrapper"><div id="engineersTable"><div class="loading">Loading...</div></div></div>
+          </div>
+
+          <!-- AMC Contracts -->
+          <div class="admin-section" id="amc-contracts">
+            <div class="filter-bar">
+              <select id="amcStatusFilter"><option value="all">All Status</option><option value="active">Active</option><option value="expired">Expired</option></select>
+              <button class="btn btn-primary" style="font-size:0.9rem;" onclick="openModal('newAMC')">+ New Contract</button>
+            </div>
+            <div class="admin-table-wrapper"><div id="amcTable"><div class="loading">Loading...</div></div></div>
+          </div>
+
+          <!-- Invoices -->
+          <div class="admin-section" id="invoices">
+            <div class="filter-bar">
+              <select id="invStatusFilter"><option value="all">All Status</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select>
+              <button class="btn btn-primary" style="font-size:0.9rem;" onclick="openModal('newInvoice')">+ Create Invoice</button>
+            </div>
+            <div id="invoicesList"><div class="loading">Loading...</div></div>
+          </div>
+
+          <!-- Careers -->
+          <div class="admin-section" id="careers">
+            <div class="filter-bar">
+              <select id="careerStatusFilter"><option value="all">All Status</option><option value="new">New</option><option value="reviewed">Reviewed</option><option value="shortlisted">Shortlisted</option><option value="rejected">Rejected</option></select>
+            </div>
+            <div class="admin-table-wrapper"><div id="careersTable"><div class="loading">Loading...</div></div></div>
+          </div>
+
+          <!-- Reports -->
+          <div class="admin-section" id="reports">
+            <div id="reportsContent"><div class="loading">Loading...</div></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api';
+    let TOKEN = localStorage.getItem('skb_token');
+
+    /* ---------- Auth ---------- */
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const errEl = document.getElementById('loginError');
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        TOKEN = data.token;
+        localStorage.setItem('skb_token', TOKEN);
+        localStorage.setItem('skb_user', JSON.stringify(data.user));
+        showAdmin(data.user);
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      }
+    });
+
+    function showAdmin(user) {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('adminPanel').classList.add('active');
+      document.getElementById('adminUserName').textContent = user.name;
+      document.getElementById('welcomeText').textContent = `Welcome, ${user.name}`;
+      loadDashboard();
+    }
+
+    function logout() {
+      localStorage.removeItem('skb_token');
+      localStorage.removeItem('skb_user');
+      TOKEN = null;
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('adminPanel').classList.remove('active');
+    }
+
+    async function apiFetch(endpoint, method = 'GET', body = null) {
+      const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(`${API}${endpoint}`, opts);
+      if (res.status === 401 || res.status === 403) { logout(); throw new Error('Session expired'); }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+    }
+
+    function formatCurrency(n) { return '\u20B9' + Number(n).toLocaleString('en-IN'); }
+    function formatDate(d) { if (!d) return '-'; return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }
+    function statusBadge(s) {
+      const colors = { new:'active', contacted:'pending', follow_up:'pending', converted:'completed', lost:'', assigned:'active', in_progress:'pending', completed:'completed', available:'active', on_task:'pending', active:'active', expired:'', paid:'completed', pending:'pending', overdue:'overdue', reviewed:'pending', shortlisted:'active', rejected:'' };
+      return `<span class="status-badge ${colors[s] || ''}">${s.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase())}</span>`;
+    }
+    function priorityColor(p) { return p === 'high' ? 'var(--danger)' : p === 'medium' ? 'var(--warning)' : 'var(--success)'; }
+
+    /* ---------- Sidebar Nav ---------- */
+    document.querySelectorAll('.admin-nav a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.admin-nav a').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const s = this.getAttribute('data-section');
+        document.querySelectorAll('.admin-section').forEach(sec => { sec.style.display = 'none'; sec.classList.remove('active-section'); });
+        const el = document.getElementById(s);
+        if (el) { el.style.display = 'block'; el.classList.add('active-section'); }
+        const titles = { dashboard:'Dashboard', leads:'Leads Management', 'service-requests':'Service Requests', engineers:'Engineer Management', 'amc-contracts':'AMC Contracts', invoices:'Invoices & Billing', careers:'Career Applications', reports:'Reports & Analytics' };
+        document.getElementById('pageTitle').textContent = titles[s] || 'Dashboard';
+        loadSectionData(s);
+      });
+    });
+
+    /* ---------- Load Dashboard ---------- */
+    async function loadDashboard() {
+      try {
+        const stats = await apiFetch('/dashboard/stats');
+        document.getElementById('statLeads').textContent = stats.totalLeads;
+        document.getElementById('statSR').textContent = stats.activeSR;
+        document.getElementById('statAMC').textContent = stats.totalAMC;
+        document.getElementById('statRevenue').textContent = '\u20B9' + (stats.totalRevenue / 100000).toFixed(1) + 'L';
+        document.getElementById('leadsBadge').textContent = stats.totalLeads;
+        document.getElementById('srBadge').textContent = stats.activeSR;
+
+        // Recent leads table
+        if (stats.recentLeads.length) {
+          let html = '<table class="admin-table"><thead><tr><th>Name</th><th>Service</th><th>City</th><th>Status</th></tr></thead><tbody>';
+          stats.recentLeads.forEach(l => {
+            html += `<tr><td>${l.name}</td><td>${l.service}</td><td>${l.city}</td><td>${statusBadge(l.status)}</td></tr>`;
+          });
+          html += '</tbody></table>';
+          document.getElementById('recentLeadsTable').innerHTML = html;
+        } else {
+          document.getElementById('recentLeadsTable').innerHTML = '<p style="padding:20px;color:var(--text-light);">No leads yet. Submit a quote from the website to see data here.</p>';
+        }
+
+        // Recent SR table
+        if (stats.recentSR.length) {
+          let html = '<table class="admin-table"><thead><tr><th>Client</th><th>Issue</th><th>Priority</th><th>Status</th></tr></thead><tbody>';
+          stats.recentSR.forEach(sr => {
+            html += `<tr><td>${sr.name}</td><td>${sr.service}</td><td><span style="color:${priorityColor(sr.priority)};font-weight:600;">${sr.priority?.toUpperCase()}</span></td><td>${statusBadge(sr.status)}</td></tr>`;
+          });
+          html += '</tbody></table>';
+          document.getElementById('recentSRTable').innerHTML = html;
+        } else {
+          document.getElementById('recentSRTable').innerHTML = '<p style="padding:20px;color:var(--text-light);">No service requests yet.</p>';
+        }
+      } catch (err) {
+        console.error('Dashboard load error:', err);
+      }
+    }
+
+    /* ---------- Load Section Data ---------- */
+    async function loadSectionData(section) {
+      try {
+        if (section === 'leads') await loadLeads();
+        if (section === 'service-requests') await loadSR();
+        if (section === 'engineers') await loadEngineers();
+        if (section === 'amc-contracts') await loadAMC();
+        if (section === 'invoices') await loadInvoices();
+        if (section === 'careers') await loadCareers();
+        if (section === 'reports') await loadReports();
+      } catch (err) { console.error(err); }
+    }
+
+    /* ---------- LEADS ---------- */
+    async function loadLeads() {
+      const status = document.getElementById('leadStatusFilter').value;
+      const search = document.getElementById('leadSearchFilter').value;
+      let url = `/leads?status=${status}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      const leads = await apiFetch(url);
+      if (!leads.length) { document.getElementById('leadsTable').innerHTML = '<p style="padding:20px;color:var(--text-light);">No leads found.</p>'; return; }
+      let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>Company</th><th>Phone</th><th>Service</th><th>City</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+      leads.forEach(l => {
+        html += `<tr><td>#L${String(l.id).padStart(3,'0')}</td><td>${l.name}</td><td>${l.company||'-'}</td><td>${l.phone}</td><td>${l.service}</td><td>${l.city}</td><td>${statusBadge(l.status)}</td><td>${formatDate(l.created_at)}</td><td><select onchange="updateLeadStatus(${l.id},this.value)" style="padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;"><option value="new" ${l.status==='new'?'selected':''}>New</option><option value="contacted" ${l.status==='contacted'?'selected':''}>Contacted</option><option value="follow_up" ${l.status==='follow_up'?'selected':''}>Follow-up</option><option value="converted" ${l.status==='converted'?'selected':''}>Converted</option><option value="lost" ${l.status==='lost'?'selected':''}>Lost</option></select></td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('leadsTable').innerHTML = html;
+    }
+    async function updateLeadStatus(id, status) {
+      try { await apiFetch(`/leads/${id}`, 'PUT', { status }); showToast('Lead status updated'); loadLeads(); loadDashboard(); } catch(e) { showToast(e.message, 'error'); }
+    }
+    document.getElementById('leadStatusFilter')?.addEventListener('change', loadLeads);
+    let searchTimer;
+    document.getElementById('leadSearchFilter')?.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadLeads, 400); });
+
+    /* ---------- SERVICE REQUESTS ---------- */
+    async function loadSR() {
+      const status = document.getElementById('srStatusFilter').value;
+      const priority = document.getElementById('srPriorityFilter').value;
+      const srs = await apiFetch(`/service-requests?status=${status}&priority=${priority}`);
+      const engineers = await apiFetch('/engineers');
+      if (!srs.length) { document.getElementById('srList').innerHTML = '<p style="padding:20px;color:var(--text-light);">No service requests found.</p>'; return; }
+      let html = '';
+      srs.forEach(sr => {
+        html += `<div class="ticket-card" style="border-left-color:${priorityColor(sr.priority)}">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div>
+              <h4>#SR${String(sr.id).padStart(3,'0')} - ${sr.name} - ${sr.service}</h4>
+              <div class="ticket-meta"><span>&#128197; ${formatDate(sr.created_at)}</span><span>&#128205; ${sr.city||'-'}</span>${sr.engineer_name?`<span>&#128100; ${sr.engineer_name}</span>`:''}</div>
+              <p style="color:var(--text-light);font-size:0.95rem;">${sr.message || sr.address || 'No additional details.'}</p>
+            </div>
+            ${statusBadge(sr.status)}
+          </div>
+          <div class="ticket-actions">
+            <select onchange="updateSR(${sr.id},{status:this.value})" style="padding:6px 10px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.85rem;">
+              <option value="new" ${sr.status==='new'?'selected':''}>New</option>
+              <option value="assigned" ${sr.status==='assigned'?'selected':''}>Assigned</option>
+              <option value="in_progress" ${sr.status==='in_progress'?'selected':''}>In Progress</option>
+              <option value="completed" ${sr.status==='completed'?'selected':''}>Completed</option>
+            </select>
+            <select onchange="updateSR(${sr.id},{priority:this.value})" style="padding:6px 10px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.85rem;">
+              <option value="high" ${sr.priority==='high'?'selected':''}>High</option>
+              <option value="medium" ${sr.priority==='medium'?'selected':''}>Medium</option>
+              <option value="low" ${sr.priority==='low'?'selected':''}>Low</option>
+            </select>
+            <select onchange="updateSR(${sr.id},{assigned_engineer_id:parseInt(this.value)})" style="padding:6px 10px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.85rem;">
+              <option value="">Assign Engineer</option>
+              ${engineers.map(e => `<option value="${e.id}" ${sr.assigned_engineer_id==e.id?'selected':''}>${e.name} (${e.city})</option>`).join('')}
+            </select>
+            <button onclick="addTicketUpdate(${sr.id})" style="padding:6px 12px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:4px;font-size:0.85rem;cursor:pointer;">+ Add Update</button>
+          </div>
+        </div>`;
+      });
+      document.getElementById('srList').innerHTML = html;
+    }
+    async function updateSR(id, data) {
+      try { await apiFetch(`/service-requests/${id}`, 'PUT', data); showToast('Service request updated'); loadSR(); loadDashboard(); } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    async function addTicketUpdate(srId) {
+      const text = prompt('Enter update for this ticket (visible to user):');
+      if (!text || !text.trim()) return;
+      try {
+        await apiFetch(`/service-requests/${srId}/updates`, 'POST', { update_text: text.trim() });
+        showToast('Update added successfully! User will see this update.');
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    document.getElementById('srStatusFilter')?.addEventListener('change', loadSR);
+    document.getElementById('srPriorityFilter')?.addEventListener('change', loadSR);
+
+    /* ---------- ENGINEERS ---------- */
+    async function loadEngineers() {
+      const city = document.getElementById('engCityFilter').value;
+      const level = document.getElementById('engLevelFilter').value;
+      const engineers = await apiFetch(`/engineers?city=${city}&level=${level}`);
+      if (!engineers.length) { document.getElementById('engineersTable').innerHTML = '<p style="padding:20px;color:var(--text-light);">No engineers found.</p>'; return; }
+      let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>Level</th><th>Specialization</th><th>City</th><th>Status</th><th>Tasks</th></tr></thead><tbody>';
+      engineers.forEach(e => {
+        html += `<tr><td>#E${String(e.id).padStart(3,'0')}</td><td>${e.name}</td><td>${e.level}</td><td>${e.specialization||'-'}</td><td>${e.city}</td><td>${statusBadge(e.status)}</td><td>${e.active_tasks}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('engineersTable').innerHTML = html;
+    }
+    document.getElementById('engCityFilter')?.addEventListener('change', loadEngineers);
+    document.getElementById('engLevelFilter')?.addEventListener('change', loadEngineers);
+
+    /* ---------- AMC CONTRACTS ---------- */
+    async function loadAMC() {
+      const status = document.getElementById('amcStatusFilter').value;
+      const amcs = await apiFetch(`/amc?status=${status}`);
+      if (!amcs.length) { document.getElementById('amcTable').innerHTML = '<p style="padding:20px;color:var(--text-light);">No AMC contracts found.</p>'; return; }
+      let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Client</th><th>Type</th><th>Devices</th><th>Start</th><th>End</th><th>Value</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+      amcs.forEach(a => {
+        html += `<tr>
+          <td>#AMC${String(a.id).padStart(3,'0')}</td>
+          <td>${a.client_name}</td>
+          <td>${a.type}</td>
+          <td>${a.devices}</td>
+          <td>${formatDate(a.start_date)}</td>
+          <td>${formatDate(a.end_date)}</td>
+          <td>${formatCurrency(a.value)}</td>
+          <td><select onchange="updateAMCStatus(${a.id},this.value)" style="padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;"><option value="active" ${a.status==='active'?'selected':''}>Active</option><option value="expired" ${a.status==='expired'?'selected':''}>Expired</option></select></td>
+          <td style="white-space:nowrap;">
+            <button onclick='editAMC(${JSON.stringify(a).replace(/'/g,"&#39;")})' style="padding:5px 10px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:4px;font-size:0.8rem;cursor:pointer;margin-right:4px;">Edit</button>
+            <button onclick="deleteAMC(${a.id},'${a.client_name}')" style="padding:5px 10px;border:1px solid var(--danger);background:var(--danger);color:#fff;border-radius:4px;font-size:0.8rem;cursor:pointer;">Delete</button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('amcTable').innerHTML = html;
+    }
+    async function updateAMCStatus(id, status) {
+      try { await apiFetch(`/amc/${id}`, 'PUT', { status }); showToast('AMC status updated'); loadAMC(); loadDashboard(); } catch(e) { showToast(e.message, 'error'); }
+    }
+    async function deleteAMC(id, name) {
+      if (!confirm(`Are you sure you want to delete AMC contract for "${name}"?`)) return;
+      try { await apiFetch(`/amc/${id}`, 'DELETE'); showToast('AMC contract deleted'); loadAMC(); loadDashboard(); } catch(e) { showToast(e.message, 'error'); }
+    }
+    function editAMC(a) {
+      const overlay = document.getElementById('modalOverlay');
+      const content = document.getElementById('modalContent');
+      const html = `<h3>Edit AMC Contract - #AMC${String(a.id).padStart(3,'0')}</h3>
+        <form id="modalForm">
+          <div class="form-group"><label>Client Name *</label><input name="client_name" value="${a.client_name}" required></div>
+          <div class="form-group"><label>Type *</label><select name="type" required><option value="">Select</option><option ${a.type==='Desktop AMC'?'selected':''}>Desktop AMC</option><option ${a.type==='Server AMC'?'selected':''}>Server AMC</option><option ${a.type==='Office AMC'?'selected':''}>Office AMC</option><option ${a.type==='Enterprise AMC'?'selected':''}>Enterprise AMC</option></select></div>
+          <div class="form-group"><label>Devices</label><input name="devices" type="number" value="${a.devices}"></div>
+          <div class="form-group"><label>Start Date *</label><input name="start_date" type="date" value="${a.start_date}" required></div>
+          <div class="form-group"><label>End Date *</label><input name="end_date" type="date" value="${a.end_date}" required></div>
+          <div class="form-group"><label>Value (INR)</label><input name="value" type="number" value="${a.value}"></div>
+          <div class="form-group"><label>Status</label><select name="status"><option value="active" ${a.status==='active'?'selected':''}>Active</option><option value="expired" ${a.status==='expired'?'selected':''}>Expired</option></select></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Update Contract</button>
+        </form>`;
+      content.innerHTML = html;
+      overlay.style.display = 'flex';
+      document.getElementById('modalForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const payload = Object.fromEntries(formData);
+        if (payload.devices) payload.devices = parseInt(payload.devices);
+        if (payload.value) payload.value = parseFloat(payload.value);
+        try {
+          await apiFetch(`/amc/${a.id}`, 'PUT', payload);
+          showToast('AMC contract updated successfully!');
+          overlay.style.display = 'none';
+          loadAMC();
+          loadDashboard();
+        } catch (err) { showToast(err.message, 'error'); }
+      });
+    }
+    document.getElementById('amcStatusFilter')?.addEventListener('change', loadAMC);
+
+    /* ---------- INVOICES ---------- */
+    async function loadInvoices() {
+      const status = document.getElementById('invStatusFilter').value;
+      const invoices = await apiFetch(`/invoices?status=${status}`);
+      if (!invoices.length) { document.getElementById('invoicesList').innerHTML = '<p style="padding:20px;color:var(--text-light);">No invoices found.</p>'; return; }
+      let html = '';
+      invoices.forEach(inv => {
+        html += `<div class="invoice-card">
+          <div class="invoice-info"><h4>${inv.invoice_number} - ${inv.client_name}</h4><p>${inv.description||''} | Due: ${formatDate(inv.due_date)}</p></div>
+          <div style="text-align:right;"><div class="invoice-amount">${formatCurrency(inv.amount)}</div>
+            <select onchange="updateInvoice(${inv.id},this.value)" style="margin-top:8px;padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;">
+              <option value="paid" ${inv.status==='paid'?'selected':''}>Paid</option>
+              <option value="pending" ${inv.status==='pending'?'selected':''}>Pending</option>
+              <option value="overdue" ${inv.status==='overdue'?'selected':''}>Overdue</option>
+            </select>
+          </div>
+        </div>`;
+      });
+      document.getElementById('invoicesList').innerHTML = html;
+    }
+    async function updateInvoice(id, status) {
+      try { await apiFetch(`/invoices/${id}`, 'PUT', { status }); showToast('Invoice updated'); loadInvoices(); loadDashboard(); } catch(e) { showToast(e.message, 'error'); }
+    }
+    document.getElementById('invStatusFilter')?.addEventListener('change', loadInvoices);
+
+    /* ---------- CAREERS ---------- */
+    async function loadCareers() {
+      const status = document.getElementById('careerStatusFilter').value;
+      const apps = await apiFetch(`/careers?status=${status}`);
+      if (!apps.length) { document.getElementById('careersTable').innerHTML = '<p style="padding:20px;color:var(--text-light);">No applications found.</p>'; return; }
+      let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Position</th><th>Resume</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+      apps.forEach(a => {
+        html += `<tr><td>#C${String(a.id).padStart(3,'0')}</td><td>${a.name}</td><td>${a.email}</td><td>${a.phone}</td><td>${a.position}</td><td>${a.resume_link?`<a href="${a.resume_link}" target="_blank" style="color:var(--accent);">View</a>`:'-'}</td><td>${statusBadge(a.status)}</td><td>${formatDate(a.created_at)}</td><td><select onchange="updateCareer(${a.id},this.value)" style="padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;"><option value="new" ${a.status==='new'?'selected':''}>New</option><option value="reviewed" ${a.status==='reviewed'?'selected':''}>Reviewed</option><option value="shortlisted" ${a.status==='shortlisted'?'selected':''}>Shortlisted</option><option value="rejected" ${a.status==='rejected'?'selected':''}>Rejected</option></select></td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('careersTable').innerHTML = html;
+    }
+    async function updateCareer(id, status) {
+      try { await apiFetch(`/careers/${id}`, 'PUT', { status }); showToast('Application updated'); loadCareers(); } catch(e) { showToast(e.message, 'error'); }
+    }
+    document.getElementById('careerStatusFilter')?.addEventListener('change', loadCareers);
+
+    /* ---------- REPORTS ---------- */
+    async function loadReports() {
+      const stats = await apiFetch('/dashboard/stats');
+      let html = '<div class="grid-2" style="margin-bottom:30px;">';
+
+      // Leads by status
+      html += '<div class="admin-table-wrapper"><div class="admin-table-header"><h3>Leads by Status</h3></div><div style="padding:25px;">';
+      const maxLeads = Math.max(...stats.leadsByStatus.map(l => l.count), 1);
+      stats.leadsByStatus.forEach(l => {
+        const pct = (l.count / maxLeads * 100).toFixed(0);
+        html += `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>${l.status.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span><span>${l.count}</span></div><div style="background:var(--light-gray);border-radius:4px;height:12px;"><div style="background:var(--accent);width:${pct}%;height:100%;border-radius:4px;"></div></div></div>`;
+      });
+      html += '</div></div>';
+
+      // SR by city
+      html += '<div class="admin-table-wrapper"><div class="admin-table-header"><h3>Service Requests by City</h3></div><div style="padding:25px;">';
+      const maxSR = Math.max(...stats.srByCity.map(s => s.count), 1);
+      if (stats.srByCity.length) {
+        stats.srByCity.forEach(s => {
+          const pct = (s.count / maxSR * 100).toFixed(0);
+          html += `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>${s.city||'Unknown'}</span><span>${s.count}</span></div><div style="background:var(--light-gray);border-radius:4px;height:12px;"><div style="background:var(--primary);width:${pct}%;height:100%;border-radius:4px;"></div></div></div>`;
+        });
+      } else {
+        html += '<p style="color:var(--text-light);">No data yet.</p>';
+      }
+      html += '</div></div></div>';
+
+      // Revenue
+      html += '<div class="admin-table-wrapper"><div class="admin-table-header"><h3>Revenue Summary</h3></div>';
+      if (stats.revenueByMonth.length) {
+        html += '<table class="admin-table"><thead><tr><th>Month</th><th>Revenue</th></tr></thead><tbody>';
+        stats.revenueByMonth.forEach(r => {
+          html += `<tr><td>${r.month}</td><td>${formatCurrency(r.total)}</td></tr>`;
+        });
+        html += '</tbody></table>';
+      } else {
+        html += '<p style="padding:20px;color:var(--text-light);">No revenue data yet.</p>';
+      }
+      html += '</div>';
+
+      document.getElementById('reportsContent').innerHTML = html;
+    }
+
+    /* ---------- MODALS ---------- */
+    function openModal(type) {
+      const overlay = document.getElementById('modalOverlay');
+      const content = document.getElementById('modalContent');
+      let html = '';
+      if (type === 'newLead') {
+        html = `<h3>Add New Lead</h3><form id="modalForm"><div class="form-group"><label>Name *</label><input name="name" required></div><div class="form-group"><label>Phone *</label><input name="phone" required></div><div class="form-group"><label>Email *</label><input name="email" type="email" required></div><div class="form-group"><label>Company</label><input name="company"></div><div class="form-group"><label>Service *</label><select name="service" required><option value="">Select</option><option>AMC Services</option><option>IT Infrastructure</option><option>Server Support</option><option>Networking</option><option>CCTV</option><option>Cloud</option><option>Other</option></select></div><div class="form-group"><label>City *</label><input name="city" required></div><div class="form-group"><label>Message</label><textarea name="message"></textarea></div><button type="submit" class="btn btn-primary" style="width:100%;">Save Lead</button></form>`;
+      } else if (type === 'newSR') {
+        html = `<h3>New Service Request</h3><form id="modalForm"><div class="form-group"><label>Name *</label><input name="name" required></div><div class="form-group"><label>Phone *</label><input name="phone" required></div><div class="form-group"><label>Email</label><input name="email" type="email"></div><div class="form-group"><label>Service *</label><select name="service" required><option value="">Select</option><option>Laptop Repair</option><option>Desktop Repair</option><option>Server Support</option><option>Network Setup</option><option>CCTV Installation</option><option>AMC Visit</option></select></div><div class="form-group"><label>City</label><input name="city"></div><div class="form-group"><label>Priority</label><select name="priority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select></div><div class="form-group"><label>Message</label><textarea name="message"></textarea></div><button type="submit" class="btn btn-primary" style="width:100%;">Create Request</button></form>`;
+      } else if (type === 'newEngineer') {
+        html = `<h3>Add Engineer</h3><form id="modalForm"><div class="form-group"><label>Name *</label><input name="name" required></div><div class="form-group"><label>Phone</label><input name="phone"></div><div class="form-group"><label>Email</label><input name="email" type="email"></div><div class="form-group"><label>Level</label><select name="level"><option>L1</option><option>L2</option><option>L3</option></select></div><div class="form-group"><label>Specialization</label><input name="specialization"></div><div class="form-group"><label>City *</label><input name="city" required></div><button type="submit" class="btn btn-primary" style="width:100%;">Add Engineer</button></form>`;
+      } else if (type === 'newAMC') {
+        html = `<h3>New AMC Contract</h3><form id="modalForm"><div class="form-group"><label>Client Name *</label><input name="client_name" required></div><div class="form-group"><label>Type *</label><select name="type" required><option value="">Select</option><option>Desktop AMC</option><option>Server AMC</option><option>Office AMC</option><option>Enterprise AMC</option></select></div><div class="form-group"><label>Devices</label><input name="devices" type="number" value="0"></div><div class="form-group"><label>Start Date *</label><input name="start_date" type="date" required></div><div class="form-group"><label>End Date *</label><input name="end_date" type="date" required></div><div class="form-group"><label>Value (INR)</label><input name="value" type="number" value="0"></div><button type="submit" class="btn btn-primary" style="width:100%;">Create Contract</button></form>`;
+      } else if (type === 'newInvoice') {
+        html = `<h3>Create Invoice</h3><form id="modalForm"><div class="form-group"><label>Invoice Number *</label><input name="invoice_number" required></div><div class="form-group"><label>Client Name *</label><input name="client_name" required></div><div class="form-group"><label>Description</label><input name="description"></div><div class="form-group"><label>Amount (INR) *</label><input name="amount" type="number" required></div><div class="form-group"><label>Due Date *</label><input name="due_date" type="date" required></div><button type="submit" class="btn btn-primary" style="width:100%;">Create Invoice</button></form>`;
+      }
+      content.innerHTML = html;
+      overlay.style.display = 'flex';
+
+      document.getElementById('modalForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const payload = Object.fromEntries(formData);
+        if (payload.devices) payload.devices = parseInt(payload.devices);
+        if (payload.value) payload.value = parseFloat(payload.value);
+        if (payload.amount) payload.amount = parseFloat(payload.amount);
+        try {
+          const endpoints = { newLead: '/leads', newSR: '/service-requests', newEngineer: '/engineers', newAMC: '/amc', newInvoice: '/invoices' };
+          const mapping = { ...payload };
+          if (type === 'newSR') mapping.type = 'quote';
+          await apiFetch(endpoints[type], 'POST', mapping);
+          showToast(`${type.replace('new','').replace(/([A-Z])/g,' $1').trim()} created successfully!`);
+          overlay.style.display = 'none';
+          loadSectionData(document.querySelector('.admin-nav a.active')?.getAttribute('data-section') || 'dashboard');
+          loadDashboard();
+        } catch (err) { showToast(err.message, 'error'); }
+      });
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('modalOverlay')) {
+        document.getElementById('modalOverlay').style.display = 'none';
+      }
+    }
+
+    /* ---------- Auto Login if Token Exists ---------- */
+    if (TOKEN) {
+      try {
+        const user = JSON.parse(localStorage.getItem('skb_user'));
+        if (user) showAdmin(user);
+      } catch(e) { logout(); }
+    }
+  </script>
+</body>
+</html>

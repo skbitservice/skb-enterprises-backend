@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | SKB Enterprises - IT Service Dashboard</title>
+  <meta name="description" content="Login to your SKB Enterprises account. Track IT service tickets, manage your profile, and get real-time updates on your service requests.">
+  <meta name="keywords" content="SKB Enterprises login, IT service dashboard, track service tickets, IT support account">
+  <meta name="author" content="SKB Enterprises">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .auth-page{display:flex;min-height:100vh;background:var(--lighter-gray)}
+    .auth-left{flex:1;background:linear-gradient(135deg,var(--primary-dark),var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;padding:40px;position:relative;overflow:hidden}
+    .auth-left::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");opacity:0.5}
+    .auth-left-content{position:relative;z-index:1;color:#fff;max-width:400px}
+    .auth-left-content .logo-box{width:70px;height:70px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.6rem;margin-bottom:30px}
+    .auth-left-content h2{font-size:2.2rem;margin-bottom:15px;line-height:1.3}
+    .auth-left-content p{opacity:0.85;font-size:1.05rem;line-height:1.7;margin-bottom:30px}
+    .auth-features{display:flex;flex-direction:column;gap:15px}
+    .auth-feature{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,0.08);border-radius:var(--radius);border:1px solid rgba(255,255,255,0.1)}
+    .auth-feature .icon{font-size:1.3rem}
+    .auth-feature span{font-size:0.95rem;opacity:0.9}
+    .auth-right{width:500px;display:flex;align-items:center;justify-content:center;padding:40px}
+    .auth-form-box{width:100%;max-width:400px}
+    .auth-form-box h2{color:var(--primary);font-size:1.8rem;margin-bottom:8px}
+    .auth-form-box .subtitle{color:var(--text-light);margin-bottom:30px;font-size:1rem}
+    .auth-tabs{display:flex;gap:0;margin-bottom:30px;background:var(--lighter-gray);border-radius:var(--radius);overflow:hidden}
+    .auth-tab{flex:1;padding:12px;text-align:center;cursor:pointer;font-weight:600;color:var(--text-light);transition:var(--transition);border:none;background:none;font-size:0.95rem}
+    .auth-tab.active{background:var(--primary);color:#fff}
+    .auth-form{display:none}
+    .auth-form.active{display:block}
+    .form-group{margin-bottom:18px}
+    .form-group label{display:block;margin-bottom:6px;font-weight:600;color:var(--dark-gray);font-size:0.9rem}
+    .form-group input,.form-group select{width:100%;padding:12px 16px;border:2px solid var(--light-gray);border-radius:var(--radius);font-size:1rem;transition:var(--transition);font-family:inherit}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,180,216,0.1)}
+    .form-error{color:var(--danger);font-size:0.85rem;margin-top:10px;display:none;padding:10px;background:rgba(239,68,68,0.08);border-radius:var(--radius)}
+    .auth-links{text-align:center;margin-top:20px;font-size:0.9rem;color:var(--text-light)}
+    .auth-links a{color:var(--accent);font-weight:600}
+    .auth-links a:hover{text-decoration:underline}
+    @media(max-width:768px){
+      .auth-page{flex-direction:column}
+      .auth-left{padding:40px 20px;min-height:auto}
+      .auth-left-content h2{font-size:1.6rem}
+      .auth-features{display:none}
+      .auth-right{width:100%;padding:30px 20px}
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="logo-box"><img src="../images/logo.png" alt="SKB Enterprises" style="width:50px;height:50px;object-fit:contain;"></div>
+        <h2>Welcome to SKB Enterprises</h2>
+        <p>Access your IT service dashboard. Track tickets, manage your profile, and get real-time updates on your service requests.</p>
+        <div class="auth-features">
+          <div class="auth-feature"><span class="icon">&#128736;</span><span>Track Your Service Tickets</span></div>
+          <div class="auth-feature"><span class="icon">&#128221;</span><span>Update Your Profile Anytime</span></div>
+          <div class="auth-feature"><span class="icon">&#128276;</span><span>Real-Time Status Updates</span></div>
+          <div class="auth-feature"><span class="icon">&#128100;</span><span>Dedicated Support</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-form-box">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+          <button class="auth-tab" onclick="switchTab('register')">Create Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <div class="auth-form active" id="loginForm">
+          <h2>Sign In</h2>
+          <p class="subtitle">Enter your credentials to access your account</p>
+          <form id="loginSubmit">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="loginEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;">Sign In</button>
+            <div class="form-error" id="loginError"></div>
+          </form>
+          <div class="auth-links">
+            <p>Admin? <a href="../admin/dashboard">Login here</a></p>
+          </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="auth-form" id="registerForm">
+          <h2>Create Account</h2>
+          <p class="subtitle">Register to manage your IT services</p>
+          <form id="registerSubmit">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="regName" placeholder="Your full name" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" id="regEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" id="regPhone" placeholder="+91 98765 43210">
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <input type="text" id="regAddress" placeholder="Your city/address">
+            </div>
+            <div class="form-group">
+              <label>Password *</label>
+              <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;">Create Account</button>
+            <div class="form-error" id="registerError"></div>
+          </form>
+          <div class="auth-links">
+            <p>Already have an account? <a href="#" onclick="switchTab('login')">Sign in</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+      if (tab === 'login') {
+        document.querySelectorAll('.auth-tab')[0].classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+      } else {
+        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+      }
+    }
+
+    // Login
+    document.getElementById('loginSubmit').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.innerHTML = 'Signing in...';
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        localStorage.setItem('skb_token', data.token);
+        localStorage.setItem('skb_user', JSON.stringify(data.user));
+        if (data.user.role === 'admin') {
+          window.location.href = '../admin/dashboard';
+        } else {
+          window.location.href = '../user/dashboard';
+        }
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+        btn.innerHTML = 'Sign In';
+        btn.disabled = false;
+      }
+    });
+
+    // Register
+    document.getElementById('registerSubmit').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('registerError');
+      errEl.style.display = 'none';
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.innerHTML = 'Creating account...';
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            phone: document.getElementById('regPhone').value,
+            address: document.getElementById('regAddress').value,
+            password: document.getElementById('regPassword').value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        localStorage.setItem('skb_token', data.token);
+        localStorage.setItem('skb_user', JSON.stringify(data.user));
+        window.location.href = '../user/dashboard';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+        btn.innerHTML = 'Create Account';
+        btn.disabled = false;
+      }
+    });
+
+    // Auto redirect if already logged in
+    const user = JSON.parse(localStorage.getItem('skb_user') || 'null');
+    if (user) {
+      if (user.role === 'admin') window.location.href = '../admin/dashboard';
+      else window.location.href = '../user/dashboard';
+    }
+  </script>
+</body>
+</html>
