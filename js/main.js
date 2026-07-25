@@ -56,6 +56,22 @@ function detectFormType(form) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  /* ---------- Page Transition Loader ---------- */
+  const pageLoader = document.querySelector('.page-loader');
+  if (pageLoader) {
+    setTimeout(() => { pageLoader.classList.add('hide'); }, 800);
+    document.querySelectorAll('a[href]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || link.target === '_blank') return;
+      link.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        pageLoader.classList.remove('hide');
+        setTimeout(() => { window.location.href = href; }, 300);
+      });
+    });
+  }
+
   /* ---------- Mobile Navigation (App-like Drawer) ---------- */
   const mobileToggle = document.querySelector('.mobile-toggle');
   const navLinks = document.querySelector('.nav-links');
