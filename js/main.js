@@ -198,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (form.id === 'careerForm') return;
       const btn = form.querySelector('button[type="submit"]');
       const originalText = btn.innerHTML;
       btn.innerHTML = 'Sending...';

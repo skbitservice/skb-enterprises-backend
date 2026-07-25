@@ -1054,6 +1054,61 @@ img { max-width: 100%; height: auto; display: block; }
 .career-card h3 { color: var(--primary); margin-bottom: 10px; font-size: 1.15rem; }
 .career-card .location { color: var(--accent); font-size: 0.9rem; margin-bottom: 10px; font-weight: 500; }
 .career-card p { color: var(--text-light); font-size: 0.95rem; margin-bottom: 15px; }
+.job-card-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 15px; gap: 10px; flex-wrap: wrap; }
+.job-share-buttons { display: flex; gap: 6px; }
+.share-btn {
+  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; transition: var(--transition); background: var(--lighter-gray); color: var(--text-light);
+}
+.share-btn:hover { transform: scale(1.15); }
+.share-whatsapp:hover { background: #25d366; color: #fff; }
+.share-linkedin:hover { background: #0077b5; color: #fff; }
+.share-twitter:hover { background: #1da1f2; color: #fff; }
+.share-copy:hover { background: var(--primary); color: #fff; }
+.share-copy.copied { background: var(--success); color: #fff; }
+.career-card.job-highlight { animation: highlightPulse 0.6s ease 3; border-left-color: var(--accent); }
+@keyframes highlightPulse {
+  0%, 100% { box-shadow: var(--shadow); }
+  50% { box-shadow: 0 0 0 4px var(--accent-light), var(--shadow-xl); }
+}
+
+.file-upload-wrapper { position: relative; }
+.file-upload-wrapper input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  z-index: -1;
+}
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-lg);
+  background: var(--lighter-gray);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.file-upload-label:hover {
+  border-color: var(--accent);
+  background: #e8f0fe;
+}
+.file-upload-icon { font-size: 1.8rem; }
+.file-upload-text { color: var(--text-light); font-size: 0.95rem; }
+.file-upload-wrapper input[type="file"]:focus + .file-upload-label {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+.file-upload-name {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 500;
+}
 
 /* ---------- Footer ---------- */
 .footer {
@@ -1779,6 +1834,8 @@ img { max-width: 100%; height: auto; display: block; }
   /* -- Careers -- */
   .careers-grid { grid-template-columns: 1fr; gap: 14px; }
   .career-card { padding: 20px; border-radius: var(--radius); }
+  .job-card-actions { flex-direction: column; align-items: stretch; }
+  .job-share-buttons { justify-content: flex-start; }
 
   /* -- AMC -- */
   .amc-grid { grid-template-columns: 1fr; gap: 20px; }
