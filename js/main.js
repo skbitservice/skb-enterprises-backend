@@ -61,8 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const navLinks = document.querySelector('.nav-links');
   const mobileOverlay = document.getElementById('mobileOverlay');
 
+  const navCta = document.querySelector('.nav-cta');
+
   function openMobileMenu() {
     if (navLinks) navLinks.classList.add('active', 'open');
+    if (navCta) navCta.classList.add('mobile-show');
     if (mobileToggle) mobileToggle.classList.add('open');
     if (mobileOverlay) mobileOverlay.classList.add('show');
     document.body.style.overflow = 'hidden';
@@ -73,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeMobileMenu() {
     if (navLinks) navLinks.classList.remove('open');
+    if (navCta) navCta.classList.remove('mobile-show');
     if (mobileToggle) mobileToggle.classList.remove('open');
     if (mobileOverlay) mobileOverlay.classList.remove('show');
     const scrollY = document.body.style.top ? Math.abs(parseInt(document.body.style.top)) : 0;

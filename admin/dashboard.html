@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a2463">
   <title>Admin Dashboard | SKB Enterprises</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
@@ -34,7 +37,36 @@
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center}
     .modal{background:var(--white);border-radius:var(--radius-lg);padding:35px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
     .modal h3{color:var(--primary);margin-bottom:20px}
-    @media(max-width:768px){.quick-actions{grid-template-columns:1fr}.ticket-actions{flex-direction:column}.invoice-card{flex-direction:column;text-align:center}.invoice-amount{text-align:center}}
+    .admin-mobile-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px;z-index:200}
+    .admin-mobile-toggle span{display:block;width:22px;height:2.5px;background:var(--dark);margin:4px 0;border-radius:2px;transition:var(--transition)}
+    .admin-mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;opacity:0;transition:opacity 0.3s;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+    .admin-mobile-overlay.show{display:block;opacity:1}
+    @media(max-width:768px){
+      .login-box{padding:30px 24px;margin:16px}
+      .admin-mobile-toggle{display:block}
+      .admin-sidebar{display:block!important;position:fixed;top:0;left:0;height:100vh;z-index:100;transform:translateX(-100%);transition:transform 0.3s ease;width:260px!important;min-width:260px!important}
+      .admin-sidebar.mobile-open{transform:translateX(0)}
+      .admin-topbar{flex-wrap:wrap;gap:8px;padding:10px 12px}
+      .admin-topbar h2{font-size:0.95rem}
+      .admin-topbar > div{gap:8px!important}
+      .admin-topbar .btn{padding:5px 10px!important;font-size:0.78rem!important}
+      .admin-topbar .welcome-text{display:none}
+      .quick-actions{grid-template-columns:1fr}
+      .ticket-actions{flex-direction:column}
+      .ticket-actions .btn{width:100%;justify-content:center}
+      .invoice-card{flex-direction:column;text-align:center}
+      .invoice-amount{text-align:center}
+      .login-box input,.login-box select{font-size:16px!important;min-height:48px}
+      .modal{margin:16px;padding:24px;max-width:calc(100vw - 32px)}
+      .admin-content{padding:12px}
+      .admin-stats{gap:8px}
+      .admin-stat-card{padding:12px}
+      .admin-stat-card h3{font-size:1.2rem}
+      .admin-stat-card p{font-size:0.75rem}
+      .admin-table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .filter-bar{flex-direction:column}
+      .filter-bar select,.filter-bar input{width:100%}
+    }
   </style>
 </head>
 <body>
@@ -58,6 +90,7 @@
 
   <!-- Admin Panel -->
   <div class="admin-panel" id="adminPanel">
+    <div class="admin-mobile-overlay" id="adminMobileOverlay" onclick="closeAdminMobileNav()"></div>
     <div class="admin-layout">
       <aside class="admin-sidebar">
         <div class="admin-sidebar-header"><h3>SKB Admin</h3><p id="adminUserName">Admin</p></div>
@@ -74,11 +107,16 @@
       </aside>
       <main class="admin-main">
         <div class="admin-topbar">
-          <h2 id="pageTitle">Dashboard</h2>
-          <div style="display:flex;align-items:center;gap:15px;">
-            <span style="color:var(--text-light);font-size:0.9rem;" id="welcomeText">Welcome</span>
-            <a href="../index.html" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;">View Site</a>
-            <button onclick="logout()" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;">Logout</button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="admin-mobile-toggle" onclick="toggleAdminMobileNav()" aria-label="Toggle Menu">
+              <span></span><span></span><span></span>
+            </button>
+            <h2 id="pageTitle">Dashboard</h2>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="welcome-text" style="color:var(--text-light);font-size:0.85rem;" id="welcomeText">Welcome</span>
+            <a href="../index.html" class="btn btn-outline" style="padding:6px 12px;font-size:0.8rem;">View Site</a>
+            <button onclick="logout()" class="btn btn-outline" style="padding:6px 12px;font-size:0.8rem;">Logout</button>
           </div>
         </div>
         <div class="admin-content">
@@ -148,6 +186,17 @@
 
           <!-- Invoices -->
           <div class="admin-section" id="invoices">
+            <div class="invoice-company-header" style="background:var(--white);border-radius:var(--radius-lg);padding:25px;box-shadow:var(--shadow);margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+              <img src="../images/logo.png" alt="SKB Enterprises" style="height:60px;object-fit:contain;">
+              <div style="flex:1;">
+                <h3 style="color:var(--primary);margin:0 0 4px;">SKB Enterprises</h3>
+                <p style="margin:0;color:var(--text-light);font-size:0.85rem;">IT Infrastructure & AMC Services</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="margin:0;font-weight:700;color:var(--primary);font-size:0.95rem;">GSTIN: 07JEMPS5242K1ZR</p>
+                <p style="margin:4px 0 0;color:var(--text-light);font-size:0.85rem;">PAN: JEMPS5242L</p>
+              </div>
+            </div>
             <div class="filter-bar">
               <select id="invStatusFilter"><option value="all">All Status</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select>
               <button class="btn btn-primary" style="font-size:0.9rem;" onclick="openModal('newInvoice')">+ Create Invoice</button>
@@ -252,6 +301,7 @@
     document.querySelectorAll('.admin-nav a').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
+        closeAdminMobileNav();
         document.querySelectorAll('.admin-nav a').forEach(l => l.classList.remove('active'));
         this.classList.add('active');
         const s = this.getAttribute('data-section');
@@ -482,14 +532,36 @@
       if (!invoices.length) { document.getElementById('invoicesList').innerHTML = '<p style="padding:20px;color:var(--text-light);">No invoices found.</p>'; return; }
       let html = '';
       invoices.forEach(inv => {
-        html += `<div class="invoice-card">
-          <div class="invoice-info"><h4>${inv.invoice_number} - ${inv.client_name}</h4><p>${inv.description||''} | Due: ${formatDate(inv.due_date)}</p></div>
-          <div style="text-align:right;"><div class="invoice-amount">${formatCurrency(inv.amount)}</div>
-            <select onchange="updateInvoice(${inv.id},this.value)" style="margin-top:8px;padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;">
-              <option value="paid" ${inv.status==='paid'?'selected':''}>Paid</option>
-              <option value="pending" ${inv.status==='pending'?'selected':''}>Pending</option>
-              <option value="overdue" ${inv.status==='overdue'?'selected':''}>Overdue</option>
-            </select>
+        const baseAmount = inv.amount;
+        const gstRate = inv.gst_rate || 18;
+        const gstAmount = (baseAmount * gstRate / 100);
+        const cgst = gstAmount / 2;
+        const sgst = gstAmount / 2;
+        const totalAmount = baseAmount + gstAmount;
+        html += `<div class="invoice-card" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div class="invoice-info">
+              <h4>${inv.invoice_number} - ${inv.client_name}</h4>
+              <p>${inv.description||''} | Due: ${formatDate(inv.due_date)}</p>
+              ${inv.client_gstin ? `<p style="font-size:0.8rem;color:var(--text-light);">Client GSTIN: ${inv.client_gstin}</p>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <div class="invoice-amount">${formatCurrency(totalAmount)}</div>
+              <span style="font-size:0.8rem;color:var(--text-light);">(incl. ${gstRate}% GST)</span>
+              <div style="margin-top:8px;">
+                <select onchange="updateInvoice(${inv.id},this.value)" style="padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;">
+                  <option value="paid" ${inv.status==='paid'?'selected':''}>Paid</option>
+                  <option value="pending" ${inv.status==='pending'?'selected':''}>Pending</option>
+                  <option value="overdue" ${inv.status==='overdue'?'selected':''}>Overdue</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--light-gray);display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:0.82rem;color:var(--text-light);">
+            <div><strong>Subtotal:</strong> ${formatCurrency(baseAmount)}</div>
+            <div><strong>CGST (${gstRate/2}%):</strong> ${formatCurrency(cgst)}</div>
+            <div><strong>SGST (${gstRate/2}%):</strong> ${formatCurrency(sgst)}</div>
+            <div style="font-weight:700;color:var(--accent);"><strong>Total:</strong> ${formatCurrency(totalAmount)}</div>
           </div>
         </div>`;
       });
@@ -574,10 +646,30 @@
       } else if (type === 'newAMC') {
         html = `<h3>New AMC Contract</h3><form id="modalForm"><div class="form-group"><label>Client Name *</label><input name="client_name" required></div><div class="form-group"><label>Type *</label><select name="type" required><option value="">Select</option><option>Desktop AMC</option><option>Server AMC</option><option>Office AMC</option><option>Enterprise AMC</option></select></div><div class="form-group"><label>Devices</label><input name="devices" type="number" value="0"></div><div class="form-group"><label>Start Date *</label><input name="start_date" type="date" required></div><div class="form-group"><label>End Date *</label><input name="end_date" type="date" required></div><div class="form-group"><label>Value (INR)</label><input name="value" type="number" value="0"></div><button type="submit" class="btn btn-primary" style="width:100%;">Create Contract</button></form>`;
       } else if (type === 'newInvoice') {
-        html = `<h3>Create Invoice</h3><form id="modalForm"><div class="form-group"><label>Invoice Number *</label><input name="invoice_number" required></div><div class="form-group"><label>Client Name *</label><input name="client_name" required></div><div class="form-group"><label>Description</label><input name="description"></div><div class="form-group"><label>Amount (INR) *</label><input name="amount" type="number" required></div><div class="form-group"><label>Due Date *</label><input name="due_date" type="date" required></div><button type="submit" class="btn btn-primary" style="width:100%;">Create Invoice</button></form>`;
+        html = `<h3>Create Invoice</h3><form id="modalForm"><div class="form-group"><label>Invoice Number *</label><input name="invoice_number" required placeholder="INV-2026-006"></div><div class="form-group"><label>Client Name *</label><input name="client_name" required></div><div class="form-group"><label>Client GSTIN</label><input name="client_gstin" placeholder="e.g. 07AABCU9603R1ZM" maxlength="15"></div><div class="form-group"><label>Description</label><input name="description"></div><div class="form-group"><label>Amount (INR) *</label><input name="amount" type="number" required placeholder="Base amount before GST"></div><div class="form-group"><label>GST Rate (%) *</label><input name="gst_rate" type="number" value="18" min="0" max="28" required></div><div class="form-group"><label>Due Date *</label><input name="due_date" type="date" required></div><div id="invoicePreview" style="background:var(--lighter-gray);border-radius:var(--radius);padding:15px;margin:10px 0;font-size:0.85rem;"></div><button type="submit" class="btn btn-primary" style="width:100%;">Create Invoice</button></form>`;
       }
       content.innerHTML = html;
       overlay.style.display = 'flex';
+
+      if (type === 'newInvoice') {
+        const amtInput = document.querySelector('[name="amount"]');
+        const gstInput = document.querySelector('[name="gst_rate"]');
+        const previewDiv = document.getElementById('invoicePreview');
+        function updateInvoicePreview() {
+          const amt = parseFloat(amtInput.value) || 0;
+          const rate = parseFloat(gstInput.value) || 18;
+          const gst = amt * rate / 100;
+          const cgst = gst / 2;
+          const sgst = gst / 2;
+          const total = amt + gst;
+          previewDiv.innerHTML = '<strong>Tax Summary</strong><br>Subtotal: ' + formatCurrency(amt) + '<br>CGST (' + (rate/2) + '%): ' + formatCurrency(cgst) + '<br>SGST (' + (rate/2) + '%): ' + formatCurrency(sgst) + '<br><strong>Total: ' + formatCurrency(total) + '</strong>';
+        }
+        if (amtInput && gstInput && previewDiv) {
+          amtInput.addEventListener('input', updateInvoicePreview);
+          gstInput.addEventListener('input', updateInvoicePreview);
+          updateInvoicePreview();
+        }
+      }
 
       document.getElementById('modalForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -603,6 +695,20 @@
       if (e.target === document.getElementById('modalOverlay')) {
         document.getElementById('modalOverlay').style.display = 'none';
       }
+    }
+
+    /* ---------- Mobile Nav ---------- */
+    function toggleAdminMobileNav() {
+      const sidebar = document.querySelector('.admin-sidebar');
+      const overlay = document.getElementById('adminMobileOverlay');
+      sidebar.classList.toggle('mobile-open');
+      overlay.classList.toggle('show');
+    }
+    function closeAdminMobileNav() {
+      const sidebar = document.querySelector('.admin-sidebar');
+      const overlay = document.getElementById('adminMobileOverlay');
+      sidebar.classList.remove('mobile-open');
+      overlay.classList.remove('show');
     }
 
     /* ---------- Auto Login if Token Exists ---------- */

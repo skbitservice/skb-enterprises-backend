@@ -97,12 +97,17 @@ async function initDB() {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     invoice_number TEXT NOT NULL,
     client_name TEXT NOT NULL,
+    client_gstin TEXT DEFAULT '',
     description TEXT DEFAULT '',
     amount REAL NOT NULL,
+    gst_rate REAL DEFAULT 18,
     due_date TEXT NOT NULL,
     status TEXT DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  try { db.run("ALTER TABLE invoices ADD COLUMN client_gstin TEXT DEFAULT ''"); } catch(e) {}
+  try { db.run("ALTER TABLE invoices ADD COLUMN gst_rate REAL DEFAULT 18"); } catch(e) {}
 
   db.run(`CREATE TABLE IF NOT EXISTS career_applications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -173,13 +178,13 @@ async function initDB() {
   const invRows = db.exec("SELECT COUNT(*) as c FROM invoices");
   if (invRows[0].values[0][0] === 0) {
     const invoices = [
-      ['INV-2026-001','National Bank','AMC Q2 Payment',300000,'2026-07-15','paid'],
-      ['INV-2026-002','MedHealth Hospitals','AMC Q2 Payment',131250,'2026-07-20','paid'],
-      ['INV-2026-003','Apex Manufacturing','Server Deployment + AMC',562500,'2026-07-25','pending'],
-      ['INV-2026-004','ABC Corp','Server Emergency Repair',45000,'2026-07-10','overdue'],
-      ['INV-2026-005','DPS Schools','CCTV Installation',280000,'2026-07-18','paid'],
+      ['INV-2026-001','National Bank','07AABCU9603R1ZM','AMC Q2 Payment',300000,18,'2026-07-15','paid'],
+      ['INV-2026-002','MedHealth Hospitals','27AADCH4562F1ZA','AMC Q2 Payment',131250,18,'2026-07-20','paid'],
+      ['INV-2026-003','Apex Manufacturing','09AABCA1234G1Z5','Server Deployment + AMC',562500,18,'2026-07-25','pending'],
+      ['INV-2026-004','ABC Corp','06AABCF7890H1Z8','Server Emergency Repair',45000,18,'2026-07-10','overdue'],
+      ['INV-2026-005','DPS Schools','07AABCI3210J1Z2','CCTV Installation',280000,18,'2026-07-18','paid'],
     ];
-    const stmt = db.prepare("INSERT INTO invoices (invoice_number,client_name,description,amount,due_date,status) VALUES (?,?,?,?,?,?)");
+    const stmt = db.prepare("INSERT INTO invoices (invoice_number,client_name,client_gstin,description,amount,gst_rate,due_date,status) VALUES (?,?,?,?,?,?,?,?)");
     invoices.forEach(i => { stmt.run(i); });
     stmt.free();
   }
@@ -474,18 +479,21 @@ app.get('/api/invoices', authenticateToken, (req, res) => {
 });
 
 app.post('/api/invoices', authenticateToken, (req, res) => {
-  const { invoice_number, client_name, description, amount, due_date } = req.body;
+  const { invoice_number, client_name, client_gstin, description, amount, gst_rate, due_date } = req.body;
   if (!invoice_number || !client_name || !amount || !due_date) {
     return res.status(400).json({ error: 'Invoice number, client, amount, and due date are required' });
   }
-  const id = runSQL('INSERT INTO invoices (invoice_number,client_name,description,amount,due_date) VALUES (?,?,?,?,?)',
-    [invoice_number, client_name, description||'', amount, due_date]);
+  const id = runSQL('INSERT INTO invoices (invoice_number,client_name,client_gstin,description,amount,gst_rate,due_date) VALUES (?,?,?,?,?,?,?)',
+    [invoice_number, client_name, client_gstin||'', description||'', amount, gst_rate||18, due_date]);
   res.status(201).json({ id, message: 'Invoice created' });
 });
 
 app.put('/api/invoices/:id', authenticateToken, (req, res) => {
-  const { status } = req.body;
-  runSQL('UPDATE invoices SET status = ? WHERE id = ?', [status, parseInt(req.params.id)]);
+  const { status, client_gstin, gst_rate } = req.body;
+  const id = parseInt(req.params.id);
+  if (status) runSQL('UPDATE invoices SET status = ? WHERE id = ?', [status, id]);
+  if (client_gstin !== undefined) runSQL('UPDATE invoices SET client_gstin = ? WHERE id = ?', [client_gstin, id]);
+  if (gst_rate !== undefined) runSQL('UPDATE invoices SET gst_rate = ? WHERE id = ?', [gst_rate, id]);
   res.json({ message: 'Invoice updated' });
 });
 

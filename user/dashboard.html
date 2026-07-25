@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a2463">
   <title>My Dashboard | SKB Enterprises</title>
   <link rel="icon" type="image/png" href="../images/favicon.png">
   <link rel="stylesheet" href="../css/style.css">
@@ -54,14 +57,32 @@
     .modal{background:var(--white);border-radius:var(--radius-lg);padding:35px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto}
     .modal h3{color:var(--primary);margin-bottom:20px}
     @media(max-width:768px){
+      .login-box{padding:30px 24px;margin:16px}
       .user-layout{flex-direction:column}
-      .user-sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;padding:10px 0}
-      .user-sidebar .user-sidebar-header{padding:10px 15px;border-bottom:none;border-right:1px solid rgba(255,255,255,0.1)}
+      .user-sidebar{width:100%!important;height:auto!important;position:relative!important;flex-direction:row;overflow-x:auto;padding:8px 0!important}
+      .user-sidebar .user-sidebar-header{padding:8px 15px;border-bottom:none;border-right:1px solid rgba(255,255,255,0.1)}
       .user-nav{display:flex;gap:0}
-      .user-nav li a{padding:10px 15px;white-space:nowrap;font-size:0.85rem}
+      .user-nav li a{padding:10px 14px;white-space:nowrap;font-size:0.82rem}
       .user-main{margin-left:0!important}
+      .user-main .main-content{padding:16px!important}
+      .user-topbar{flex-wrap:wrap;gap:8px!important;padding:10px 12px!important}
+      .user-topbar h2{font-size:0.95rem!important}
+      .user-topbar .welcome-text{display:none}
+      .user-topbar .btn{padding:5px 10px!important;font-size:0.78rem!important}
       .user-stats{grid-template-columns:1fr}
+      .new-ticket-form .form-grid{grid-template-columns:1fr!important}
       .profile-form .form-row{grid-template-columns:1fr}
+      .profile-card{padding:20px 16px}
+      .profile-header{flex-direction:column;text-align:center;gap:15px}
+      .profile-avatar{width:80px!important;height:80px!important}
+      .new-ticket-form{padding:20px 16px}
+      .new-ticket-form input,.new-ticket-form select,.new-ticket-form textarea{font-size:16px!important;min-height:48px}
+      .ticket-card{padding:16px}
+      .ticket-meta{gap:8px;font-size:0.8rem}
+      .ticket-list-item{flex-direction:column;align-items:flex-start!important;gap:8px}
+      .modal{margin:16px;padding:24px;max-width:calc(100vw - 32px)}
+      .filter-bar{flex-direction:column}
+      .filter-bar select{width:100%}
     }
   </style>
 </head>
@@ -100,15 +121,15 @@
         </ul>
       </aside>
       <main class="user-main" style="flex:1;margin-left:260px;background:var(--lighter-gray);">
-        <div style="background:var(--white);padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow);">
+        <div class="user-topbar" style="background:var(--white);padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow);">
           <h2 id="pageTitle" style="font-size:1.3rem;color:var(--primary);">Dashboard</h2>
-          <div style="display:flex;align-items:center;gap:15px;">
-            <span id="welcomeText" style="color:var(--text-light);font-size:0.9rem;"></span>
-            <a href="../index.html" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;">View Site</a>
-            <button onclick="logout()" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;">Logout</button>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span class="welcome-text" id="welcomeText" style="color:var(--text-light);font-size:0.85rem;"></span>
+            <a href="../index.html" class="btn btn-outline" style="padding:6px 12px;font-size:0.8rem;">View Site</a>
+            <button onclick="logout()" class="btn btn-outline" style="padding:6px 12px;font-size:0.8rem;">Logout</button>
           </div>
         </div>
-        <div style="padding:30px;">
+        <div class="main-content" style="padding:30px;">
 
           <!-- Dashboard -->
           <div class="user-section active-section" id="dashboard">
@@ -159,7 +180,7 @@
                     <option>Other</option>
                   </select>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
                   <div class="form-group">
                     <label>City</label>
                     <input type="text" id="ticketCity" placeholder="Your city">
