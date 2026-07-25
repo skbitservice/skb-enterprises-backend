@@ -2,6 +2,7 @@ const express = require('express');
 const initSqlJs = require('sql.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
@@ -11,7 +12,33 @@ const JWT_SECRET = 'skb-enterprises-secret-2026';
 const DB_PATH = path.join(__dirname, 'skb_database.sqlite');
 
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+const resumesDir = path.join(uploadsDir, 'resumes');
+if (!fs.existsSync(resumesDir)) fs.mkdirSync(resumesDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, resumesDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /pdf|doc|docx/;
+    const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+    const mime = allowed.test(file.mimetype) || file.mimetype === 'application/msword' || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.mimetype === 'application/pdf';
+    if (ext && mime) return cb(null, true);
+    cb(new Error('Only PDF, DOC, and DOCX files are allowed'));
+  }
+});
 
 let db;
 
@@ -116,9 +143,12 @@ async function initDB() {
     phone TEXT NOT NULL,
     position TEXT NOT NULL,
     resume_link TEXT DEFAULT '',
+    resume_file TEXT DEFAULT '',
     status TEXT DEFAULT 'new',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  try { db.run("ALTER TABLE career_applications ADD COLUMN resume_file TEXT DEFAULT ''"); } catch(e) {}
 
   db.run(`CREATE TABLE IF NOT EXISTS job_postings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -514,13 +544,14 @@ app.put('/api/invoices/:id', authenticateToken, (req, res) => {
 // ===========================
 //      CAREERS
 // ===========================
-app.post('/api/careers', (req, res) => {
+app.post('/api/careers', upload.single('resume'), (req, res) => {
   const { name, email, phone, position, resume_link } = req.body;
   if (!name || !email || !phone || !position) {
     return res.status(400).json({ error: 'Name, email, phone, and position are required' });
   }
-  const id = runSQL('INSERT INTO career_applications (name,email,phone,position,resume_link) VALUES (?,?,?,?,?)',
-    [name, email, phone, position, resume_link||'']);
+  const resumeFile = req.file ? req.file.filename : '';
+  const id = runSQL('INSERT INTO career_applications (name,email,phone,position,resume_link,resume_file) VALUES (?,?,?,?,?,?)',
+    [name, email, phone, position, resume_link||'', resumeFile]);
   res.status(201).json({ id, message: 'Application submitted successfully' });
 });
 
