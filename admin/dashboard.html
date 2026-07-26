@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2556429956638470" crossorigin="anonymous"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a2463">
   <title>Admin Dashboard | SKB Enterprises</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <style>
@@ -745,7 +749,8 @@
       if (!apps.length) { document.getElementById('careersTable').innerHTML = '<p style="padding:20px;color:var(--text-light);">No applications found.</p>'; return; }
       let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Position</th><th>Resume</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>';
       apps.forEach(a => {
-        html += `<tr><td>#C${String(a.id).padStart(3,'0')}</td><td>${a.name}</td><td>${a.email}</td><td>${a.phone}</td><td>${a.position}</td><td>${a.resume_link?`<a href="${a.resume_link}" target="_blank" style="color:var(--accent);">View</a>`:'-'}</td><td>${statusBadge(a.status)}</td><td>${formatDate(a.created_at)}</td><td><select onchange="updateCareer(${a.id},this.value)" style="padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;"><option value="new" ${a.status==='new'?'selected':''}>New</option><option value="reviewed" ${a.status==='reviewed'?'selected':''}>Reviewed</option><option value="shortlisted" ${a.status==='shortlisted'?'selected':''}>Shortlisted</option><option value="rejected" ${a.status==='rejected'?'selected':''}>Rejected</option></select></td></tr>`;
+        const resumeHtml = a.resume_file ? `<a href="/uploads/resumes/${a.resume_file}" download style="color:var(--accent);display:inline-flex;align-items:center;gap:4px;">&#128196; Download CV</a>` : (a.resume_link ? `<span style="font-size:0.85rem;color:var(--text-light);">${a.resume_link.substring(0,50)}${a.resume_link.length>50?'...':''}</span>` : '-');
+        html += `<tr><td>#C${String(a.id).padStart(3,'0')}</td><td>${a.name}</td><td>${a.email}</td><td>${a.phone}</td><td>${a.position}</td><td>${resumeHtml}</td><td>${statusBadge(a.status)}</td><td>${formatDate(a.created_at)}</td><td><select onchange="updateCareer(${a.id},this.value)" style="padding:4px 8px;border:1px solid var(--light-gray);border-radius:4px;font-size:0.8rem;"><option value="new" ${a.status==='new'?'selected':''}>New</option><option value="reviewed" ${a.status==='reviewed'?'selected':''}>Reviewed</option><option value="shortlisted" ${a.status==='shortlisted'?'selected':''}>Shortlisted</option><option value="rejected" ${a.status==='rejected'?'selected':''}>Rejected</option></select></td></tr>`;
       });
       html += '</tbody></table>';
       document.getElementById('careersTable').innerHTML = html;
@@ -783,7 +788,7 @@
               <option value="closed" ${j.status==='closed'?'selected':''}>Closed</option>
             </select>
             <button onclick='editJob(${JSON.stringify(j).replace(/'/g,"&#39;")})' style="padding:6px 12px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:4px;font-size:0.85rem;cursor:pointer;">Edit</button>
-            <button onclick="deleteJob(${j.id},'${j.title.replace(/'/g,"\\'")}')" style="padding:6px 12px;border:1px solid var(--danger);background:var(--danger);color:#fff;border-radius:4px;font-size:0.85rem;cursor:pointer;">Delete</button>
+            <button onclick="deleteJob(${j.id},'${j.title.replace(/'/g,"\\'")}')" style="padding:6px 12px;border:1px solid var(--danger);background:var(--danger);color:#fff;border-radius:4px;font-size:0.85rem;cursor:pointer;">Close</button>
           </div>
         </div>`;
       });
@@ -793,8 +798,8 @@
       try { await apiFetch(`/jobs/${id}`, 'PUT', { status }); showToast('Job status updated'); loadJobPostings(); } catch(e) { showToast(e.message, 'error'); }
     }
     async function deleteJob(id, title) {
-      if (!confirm(`Delete job posting "${title}"?`)) return;
-      try { await apiFetch(`/jobs/${id}`, 'DELETE'); showToast('Job posting deleted'); loadJobPostings(); } catch(e) { showToast(e.message, 'error'); }
+      if (!confirm(`Close job posting "${title}"?`)) return;
+      try { await apiFetch(`/jobs/${id}`, 'DELETE'); showToast('Job posting closed'); loadJobPostings(); } catch(e) { showToast(e.message, 'error'); }
     }
     function editJob(j) {
       const overlay = document.getElementById('modalOverlay');
